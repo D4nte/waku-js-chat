@@ -7,7 +7,7 @@ import { ServiceNode } from "./lib/index.js";
 
 const execAsync = promisify(exec);
 
-const WAKUNODE_IMAGE = process.env.WAKUNODE_IMAGE || "wakuorg/nwaku:v0.31.0";
+const WAKUNODE_IMAGE = process.env.WAKUNODE_IMAGE || "wakuorg/nwaku:v0.33.1";
 const containerName = "rln_tree";
 
 async function syncRlnTree() {
