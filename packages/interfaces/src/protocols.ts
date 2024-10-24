@@ -106,6 +106,15 @@ export type ProtocolCreateOptions = {
    * List of peers to use to bootstrap the node. Ignored if defaultBootstrap is set to true.
    */
   bootstrapPeers?: string[];
+  /**
+   * List of nodes' multiaddrs as strings to use for each protocol. If not specified, random nodes will be used.
+   * This should be used only if you know what you are doing.
+   */
+  nodesToUse?: {
+    store?: string[];
+    filter?: string[];
+    lightpush?: string[];
+  };
 };
 
 export type Callback<T extends IDecodedMessage> = (
