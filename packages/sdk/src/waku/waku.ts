@@ -108,6 +108,15 @@ export class WakuNode implements IWaku {
     if (protocolsEnabled.store) {
       const store = wakuStore(this.connectionManager);
       this.store = store(libp2p);
+
+      if (options.nodesToUse?.store) {
+        this.dialMultiaddr(
+          options.nodesToUse.store[0],
+          this.store.protocol.multicodec
+        ).catch((e) => {
+          log.error("Failed to dial store peer", e);
+        });
+      }
     }
 
     if (protocolsEnabled.lightpush) {
@@ -222,6 +231,14 @@ export class WakuNode implements IWaku {
 
   public isConnected(): boolean {
     return this.connectionManager.isConnected();
+  }
+
+  private async dialMultiaddr(
+    multiaddrStr: string,
+    protocol: string
+  ): Promise<void> {
+    const ma = multiaddr(multiaddrStr);
+    await this.libp2p.dialProtocol(ma, [protocol]);
   }
 
   private mapToPeerIdOrMultiaddr(
