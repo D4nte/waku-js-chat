@@ -110,10 +110,8 @@ export type ProtocolCreateOptions = {
    * List of nodes' multiaddrs as strings to use for each protocol. If not specified, random nodes will be used.
    * This should be used only if you know what you are doing.
    */
-  nodesToUse?: {
-    store?: string[];
-    filter?: string[];
-    lightpush?: string[];
+  nodeToUse?: {
+    store?: string;
   };
 };
 

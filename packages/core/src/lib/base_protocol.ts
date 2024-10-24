@@ -3,6 +3,7 @@ import type { Peer, Stream } from "@libp2p/interface";
 import type {
   IBaseProtocolCore,
   Libp2pComponents,
+  PeerIdStr,
   PubsubTopic
 } from "@waku/interfaces";
 import { Logger } from "@waku/utils";
@@ -75,15 +76,30 @@ export class BaseProtocol implements IBaseProtocolCore {
   public async getPeers(
     {
       numPeers,
-      maxBootstrapPeers
+      maxBootstrapPeers,
+      peerIdStr
     }: {
       numPeers: number;
       maxBootstrapPeers: number;
+      peerIdStr?: PeerIdStr;
     } = {
       maxBootstrapPeers: 0,
       numPeers: 0
     }
   ): Promise<Peer[]> {
+    if (peerIdStr) {
+      const peer = (await this.connectedPeers()).find(
+        (p) => p.id.toString() === peerIdStr
+      );
+      if (peer) {
+        return [peer];
+      }
+      this.log.warn(
+        `Passed node to use for ${this.multicodec} not found: ${peerIdStr}. Attempting to use random peers.`
+      );
+      return this.getPeers({ numPeers, maxBootstrapPeers });
+    }
+
     // Retrieve all connected peers that support the protocol & shard (if configured)
     const allAvailableConnectedPeers = await this.connectedPeers();
 

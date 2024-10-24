@@ -23,7 +23,11 @@ const log = new Logger("waku:store:sdk");
 export class Store extends BaseProtocolSDK implements IStore {
   public readonly protocol: StoreCore;
 
-  public constructor(connectionManager: ConnectionManager, libp2p: Libp2p) {
+  public constructor(
+    connectionManager: ConnectionManager,
+    libp2p: Libp2p,
+    private readonly peerIdStrToUse?: string
+  ) {
     super(
       new StoreCore(connectionManager.configuredPubsubTopics, libp2p),
       connectionManager,
@@ -61,9 +65,11 @@ export class Store extends BaseProtocolSDK implements IStore {
     const peer = (
       await this.protocol.getPeers({
         numPeers: this.numPeersToUse,
-        maxBootstrapPeers: 1
+        maxBootstrapPeers: 1,
+        peerIdStr: this.peerIdStrToUse
       })
     )[0];
+
     if (!peer) {
       log.error("No peers available to query");
       throw new Error("No peers available to query");
@@ -237,9 +243,10 @@ export class Store extends BaseProtocolSDK implements IStore {
  * @returns A function that takes a Libp2p instance and returns a StoreSDK instance.
  */
 export function wakuStore(
-  connectionManager: ConnectionManager
+  connectionManager: ConnectionManager,
+  peerIdStrToUse?: string
 ): (libp2p: Libp2p) => IStore {
   return (libp2p: Libp2p) => {
-    return new Store(connectionManager, libp2p);
+    return new Store(connectionManager, libp2p, peerIdStrToUse);
   };
 }
