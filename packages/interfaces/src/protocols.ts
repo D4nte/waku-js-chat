@@ -28,6 +28,10 @@ export type IBaseProtocolSDK = {
   readonly numPeersToUse: number;
 };
 
+type StoreProtocolOptions = {
+  peer: string;
+};
+
 export type NetworkConfig = StaticSharding | AutoSharding;
 
 //TODO: merge this with ProtocolCreateOptions or establish distinction: https://github.com/waku-org/js-waku/issues/2048
@@ -107,12 +111,9 @@ export type ProtocolCreateOptions = {
    */
   bootstrapPeers?: string[];
   /**
-   * List of nodes' multiaddrs as strings to use for each protocol. If not specified, random nodes will be used.
-   * This should be used only if you know what you are doing.
+   * Options for the Store protocol.
    */
-  nodeToUse?: {
-    store?: string;
-  };
+  store?: Partial<StoreProtocolOptions>;
 };
 
 export type Callback<T extends IDecodedMessage> = (

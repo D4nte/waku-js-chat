@@ -108,8 +108,8 @@ export class WakuNode implements IWaku {
 
     if (protocolsEnabled.store) {
       let peerIdStr: PeerIdStr | undefined;
-      if (options.nodeToUse?.store) {
-        this.dialMultiaddr(options.nodeToUse.store, StoreCodec).catch((e) => {
+      if (options.store?.peer) {
+        this.dialMultiaddr(options.store.peer, StoreCodec).catch((e) => {
           log.error("Failed to dial store peer", e);
         });
       }
