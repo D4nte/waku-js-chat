@@ -109,9 +109,11 @@ export class WakuNode implements IWaku {
     if (protocolsEnabled.store) {
       let peerIdStr: PeerIdStr | undefined;
       if (options.store?.peer) {
-        this.dialMultiaddr(options.store.peer, StoreCodec).catch((e) => {
-          log.error("Failed to dial store peer", e);
-        });
+        this.connectionManager
+          .dialPeer(options.store.peer, [StoreCodec])
+          .catch((e) => {
+            log.error("Failed to dial store peer", e);
+          });
       }
 
       const store = wakuStore(this.connectionManager, peerIdStr);
@@ -230,18 +232,6 @@ export class WakuNode implements IWaku {
 
   public isConnected(): boolean {
     return this.connectionManager.isConnected();
-  }
-
-  private async dialMultiaddr(
-    multiaddrStr: string,
-    protocol: string
-  ): Promise<PeerIdStr> {
-    const ma = multiaddr(multiaddrStr);
-    if (!ma.getPeerId()) {
-      throw new Error("Failed to dial multiaddr: missing peer ID");
-    }
-    await this.libp2p.dialProtocol(ma, [protocol]);
-    return ma.getPeerId()!;
   }
 
   private mapToPeerIdOrMultiaddr(

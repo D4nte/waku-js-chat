@@ -1,4 +1,4 @@
-import type { Peer } from "@libp2p/interface-peer-id";
+import type { Peer } from "@libp2p/interface";
 import { ConnectionManager, StoreCore } from "@waku/core";
 import {
   IDecodedMessage,

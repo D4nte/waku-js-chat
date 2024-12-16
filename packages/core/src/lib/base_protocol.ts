@@ -3,7 +3,6 @@ import type { Peer, Stream } from "@libp2p/interface";
 import type {
   IBaseProtocolCore,
   Libp2pComponents,
-  PeerIdStr,
   PubsubTopic
 } from "@waku/interfaces";
 import { Logger } from "@waku/utils";

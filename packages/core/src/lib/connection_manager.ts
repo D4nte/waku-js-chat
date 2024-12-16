@@ -1,5 +1,7 @@
 import type { Peer, PeerId, PeerInfo, PeerStore } from "@libp2p/interface";
+import {} from "@libp2p/peer-id";
 import { TypedEventEmitter } from "@libp2p/interface";
+import { multiaddr } from "@multiformats/multiaddr";
 import {
   ConnectionManagerOptions,
   DiscoveryTrigger,
@@ -11,6 +13,7 @@ import {
   IPeersByDiscoveryEvents,
   IRelay,
   KeepAliveOptions,
+  MultiaddrStr,
   PeersByDiscoveryResult,
   PubsubTopic,
   ShardInfo
@@ -219,7 +222,29 @@ export class ConnectionManager
     this.startNetworkStatusListener();
   }
 
-  private async dialPeer(peerId: PeerId): Promise<void> {
+  public async dialPeer(
+    peer: PeerId | MultiaddrStr,
+    protocols?: string[]
+  ): Promise<void> {
+    let peerId: PeerId;
+    if (typeof peer === "string") {
+      const ma = multiaddr(peer);
+      const peerIdStr = ma.getPeerId();
+      if (!peerIdStr) {
+        throw new Error("Failed to dial multiaddr: missing peer ID");
+      }
+      const conn = this.libp2p
+        .getConnections()
+        .find((conn) => conn.remotePeer.toString() === peerIdStr);
+      if (conn) {
+        peerId = conn.remotePeer;
+      } else {
+        throw new Error("Failed to dial multiaddr: no connection found");
+      }
+    } else {
+      peerId = peer;
+    }
+
     this.currentActiveParallelDialCount += 1;
     let dialAttempt = 0;
     while (dialAttempt < this.options.maxDialAttemptsForPeer) {
@@ -227,7 +252,9 @@ export class ConnectionManager
         log.info(
           `Dialing peer ${peerId.toString()} on attempt ${dialAttempt + 1}`
         );
-        await this.libp2p.dial(peerId);
+        protocols
+          ? await this.libp2p.dialProtocol(peerId, protocols)
+          : await this.libp2p.dial(peerId);
 
         const tags = await this.getTagNamesForPeer(peerId);
         // add tag to connection describing discovery mechanism
