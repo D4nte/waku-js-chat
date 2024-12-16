@@ -1,3 +1,4 @@
+import type { Peer } from "@libp2p/interface-peer-id";
 import { ConnectionManager, StoreCore } from "@waku/core";
 import {
   IDecodedMessage,
@@ -62,13 +63,14 @@ export class Store extends BaseProtocolSDK implements IStore {
       ...options
     };
 
-    const peer = (
-      await this.protocol.getPeers({
-        numPeers: this.numPeersToUse,
-        maxBootstrapPeers: 1,
-        peerIdStr: this.peerIdStrToUse
-      })
-    )[0];
+    const peer =
+      (await this.getPeerToUse()) ??
+      (
+        await this.protocol.getPeers({
+          numPeers: this.numPeersToUse,
+          maxBootstrapPeers: 1
+        })
+      )[0];
 
     if (!peer) {
       log.error("No peers available to query");
@@ -233,6 +235,20 @@ export class Store extends BaseProtocolSDK implements IStore {
       contentTopics,
       decodersAsMap
     };
+  }
+
+  private async getPeerToUse(): Promise<Peer | null> {
+    const peer = this.connectedPeers.find(
+      (p) => p.id.toString() === this.peerIdStrToUse
+    );
+    if (peer) {
+      return peer;
+    }
+
+    log.warn(
+      `Passed node to use for Store not found: ${this.peerIdStrToUse}. Attempting to use random peers.`
+    );
+    return null;
   }
 }
 
