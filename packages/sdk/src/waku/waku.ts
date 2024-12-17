@@ -116,7 +116,7 @@ export class WakuNode implements IWaku {
           });
       }
 
-      const store = wakuStore(this.connectionManager, peerIdStr);
+      const store = wakuStore(this.connectionManager, { peer: peerIdStr });
       this.store = store(libp2p);
     }
 
