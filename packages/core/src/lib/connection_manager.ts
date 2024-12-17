@@ -1,5 +1,4 @@
 import type { Peer, PeerId, PeerInfo, PeerStore } from "@libp2p/interface";
-import {} from "@libp2p/peer-id";
 import { TypedEventEmitter } from "@libp2p/interface";
 import { multiaddr } from "@multiformats/multiaddr";
 import {

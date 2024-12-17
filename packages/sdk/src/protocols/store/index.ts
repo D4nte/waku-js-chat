@@ -6,7 +6,8 @@ import {
   IStore,
   Libp2p,
   QueryRequestParams,
-  StoreCursor
+  StoreCursor,
+  StoreProtocolOptions
 } from "@waku/interfaces";
 import { messageHash } from "@waku/message-hash";
 import { ensurePubsubTopicIsConfigured, isDefined, Logger } from "@waku/utils";
@@ -27,7 +28,7 @@ export class Store extends BaseProtocolSDK implements IStore {
   public constructor(
     connectionManager: ConnectionManager,
     libp2p: Libp2p,
-    private readonly peerIdStrToUse?: string
+    private options?: Partial<StoreProtocolOptions>
   ) {
     super(
       new StoreCore(connectionManager.configuredPubsubTopics, libp2p),
@@ -239,14 +240,14 @@ export class Store extends BaseProtocolSDK implements IStore {
 
   private async getPeerToUse(): Promise<Peer | null> {
     const peer = this.connectedPeers.find(
-      (p) => p.id.toString() === this.peerIdStrToUse
+      (p) => p.id.toString() === this.options?.peer
     );
     if (peer) {
       return peer;
     }
 
     log.warn(
-      `Passed node to use for Store not found: ${this.peerIdStrToUse}. Attempting to use random peers.`
+      `Passed node to use for Store not found: ${this.options?.peer}. Attempting to use random peers.`
     );
     return null;
   }
@@ -260,9 +261,9 @@ export class Store extends BaseProtocolSDK implements IStore {
  */
 export function wakuStore(
   connectionManager: ConnectionManager,
-  peerIdStrToUse?: string
+  options?: Partial<StoreProtocolOptions>
 ): (libp2p: Libp2p) => IStore {
   return (libp2p: Libp2p) => {
-    return new Store(connectionManager, libp2p, peerIdStrToUse);
+    return new Store(connectionManager, libp2p, options);
   };
 }

@@ -28,7 +28,7 @@ export type IBaseProtocolSDK = {
   readonly numPeersToUse: number;
 };
 
-type StoreProtocolOptions = {
+export type StoreProtocolOptions = {
   peer: string;
 };
 
