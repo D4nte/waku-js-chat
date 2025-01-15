@@ -69,7 +69,9 @@ describe("Connection state", function () {
   });
 
   it("should emit `waku:offline` event only when all peers disconnect", async function () {
+    console.log("dial 1");
     await waku.dial(nwaku1PeerId, [Protocols.Filter]);
+    console.log("dial 1 success");
     await waku.dial(nwaku2PeerId, [Protocols.Filter]);
 
     let eventCount = 0;
