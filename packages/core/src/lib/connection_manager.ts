@@ -1,6 +1,6 @@
 import type { Peer, PeerId, PeerInfo, PeerStore } from "@libp2p/interface";
-import { TypedEventEmitter } from "@libp2p/interface";
-import { multiaddr } from "@multiformats/multiaddr";
+import { isPeerId, TypedEventEmitter } from "@libp2p/interface";
+import { multiaddr, MultiaddrInput } from "@multiformats/multiaddr";
 import {
   ConnectionManagerOptions,
   DiscoveryTrigger,
@@ -12,7 +12,6 @@ import {
   IPeersByDiscoveryEvents,
   IRelay,
   KeepAliveOptions,
-  MultiaddrStr,
   PeersByDiscoveryResult,
   PubsubTopic,
   ShardInfo
@@ -222,27 +221,10 @@ export class ConnectionManager
   }
 
   public async dialPeer(
-    peer: PeerId | MultiaddrStr,
+    peer: PeerId | MultiaddrInput,
     protocols?: string[]
   ): Promise<void> {
-    let peerId: PeerId;
-    if (typeof peer === "string") {
-      const ma = multiaddr(peer);
-      const peerIdStr = ma.getPeerId();
-      if (!peerIdStr) {
-        throw new Error("Failed to dial multiaddr: missing peer ID");
-      }
-      const conn = this.libp2p
-        .getConnections()
-        .find((conn) => conn.remotePeer.toString() === peerIdStr);
-      if (conn) {
-        peerId = conn.remotePeer;
-      } else {
-        throw new Error("Failed to dial multiaddr: no connection found");
-      }
-    } else {
-      peerId = peer;
-    }
+    const peerId = this.getPeerIdFromPeerOrMultiaddr(peer);
 
     this.currentActiveParallelDialCount += 1;
     let dialAttempt = 0;
@@ -327,6 +309,34 @@ export class ConnectionManager
         throw new Error(
           `Error deleting undialable peer ${peerId.toString()} from peer store - ${error}`
         );
+      }
+    }
+  }
+
+  /**
+   * Internal utility to extract a PeerId from either a PeerId object or multiaddr input.
+   * This is used internally by the connection manager to handle different peer input formats.
+   * @internal
+   * @param peer - The PeerId or MultiaddrInput to extract the PeerId from
+   * @returns The extracted PeerId
+   */
+  private getPeerIdFromPeerOrMultiaddr(peer: PeerId | MultiaddrInput): PeerId {
+    if (isPeerId(peer)) {
+      return peer;
+    } else {
+      // peer is of MultiaddrInput type
+      const ma = multiaddr(peer);
+      const peerIdStr = ma.getPeerId();
+      if (!peerIdStr) {
+        throw new Error("Failed to dial multiaddr: missing peer ID");
+      }
+      const conn = this.libp2p
+        .getConnections()
+        .find((conn) => conn.remotePeer.toString() === peerIdStr);
+      if (conn) {
+        return conn.remotePeer;
+      } else {
+        throw new Error("Failed to dial multiaddr: no connection found");
       }
     }
   }

@@ -36,5 +36,3 @@ export type CreateLibp2pOptions = Libp2pOptions & {
    */
   filterMultiaddrs?: boolean;
 };
-
-export type MultiaddrStr = string;
