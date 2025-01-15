@@ -122,14 +122,14 @@ jobs:
     uses: ./.github/workflows/test-node.yml
     secrets: inherit
     with:
-      nim_wakunode_image: ${{ inputs.nim_wakunode_image || 'wakuorg/nwaku:v0.33.1' }}
+      nim_wakunode_image: ${{ inputs.nim_wakunode_image || 'wakuorg/nwaku:v0.34.0' }}
       test_type: node
       allure_reports: true
 
   node_optional:
     uses: ./.github/workflows/test-node.yml
     with:
-      nim_wakunode_image: ${{ inputs.nim_wakunode_image || 'wakuorg/nwaku:v0.33.1' }}
+      nim_wakunode_image: ${{ inputs.nim_wakunode_image || 'wakuorg/nwaku:v0.34.0' }}
       test_type: node-optional
 
   node_with_nwaku_master:
