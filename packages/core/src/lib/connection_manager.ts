@@ -365,9 +365,6 @@ export class ConnectionManager
    * Internal utility to extract a PeerId or Multiaddr from a peer input.
    * This is used internally by the connection manager to handle different peer input formats.
    * @internal
-   * @param peer - The peer to extract information from, either as a PeerId object or multiaddr input
-   * @returns The peer information as either a PeerId, single Multiaddr, or array of Multiaddrs
-   * @throws Error if the multiaddr input is missing a peer ID
    */
   private getDialablePeerInfo(
     peer: PeerId | MultiaddrInput
