@@ -220,6 +220,45 @@ export class ConnectionManager
     this.startNetworkStatusListener();
   }
 
+  /**
+   * Attempts to establish a connection with a peer and set up specified protocols.
+   * The method handles both PeerId and Multiaddr inputs, manages connection attempts,
+   * and maintains the connection state.
+   *
+   * The dialing process includes:
+   * 1. Converting input to dialable peer info
+   * 2. Managing parallel dial attempts
+   * 3. Attempting to establish protocol-specific connections
+   * 4. Handling connection failures and retries
+   * 5. Updating the peer store and connection state
+   *
+   * @param {PeerId | MultiaddrInput} peer - The peer to connect to, either as a PeerId or multiaddr
+   * @param {string[]} [protocolCodecs] - Optional array of protocol-specific codec strings to establish
+   *                                      (e.g., for LightPush, Filter, Store protocols)
+   *
+   * @throws {Error} If the multiaddr is missing a peer ID
+   * @throws {Error} If the maximum dial attempts are reached and the peer cannot be dialed
+   * @throws {Error} If there's an error deleting an undialable peer from the peer store
+   *
+   * @example
+   * ```typescript
+   * // Dial using PeerId
+   * await connectionManager.dialPeer(peerId);
+   *
+   * // Dial using multiaddr with specific protocols
+   * await connectionManager.dialPeer(multiaddr, [
+   *   "/vac/waku/relay/2.0.0",
+   *   "/vac/waku/lightpush/2.0.0-beta1"
+   * ]);
+   * ```
+   *
+   * @remarks
+   * - The method implements exponential backoff through multiple dial attempts
+   * - Maintains a queue for parallel dial attempts (limited by maxParallelDials)
+   * - Integrates with the KeepAliveManager for connection maintenance
+   * - Updates the peer store and connection state after successful/failed attempts
+   * - If all dial attempts fail, triggers DNS discovery as a fallback
+   */
   public async dialPeer(
     peer: PeerId | MultiaddrInput,
     protocolCodecs?: string[]
