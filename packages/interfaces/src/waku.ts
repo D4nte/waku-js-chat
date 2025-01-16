@@ -1,4 +1,4 @@
-import type { PeerId, Stream } from "@libp2p/interface";
+import type { PeerId } from "@libp2p/interface";
 import type { MultiaddrInput } from "@multiformats/multiaddr";
 
 import { IConnectionManager } from "./connection_manager.js";
@@ -55,7 +55,7 @@ export interface IWaku {
    * waku.isConnected() === true;
    * ```
    */
-  dial(peer: PeerId | MultiaddrInput, protocols?: Protocols[]): Promise<Stream>;
+  dial(peer: PeerId | MultiaddrInput, protocols?: Protocols[]): Promise<void>;
 
   /**
    * Starts all services and components related to functionality of Waku node.

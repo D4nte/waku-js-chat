@@ -1,3 +1,4 @@
+import type { Peer } from "@libp2p/interface";
 import { ConnectionManager, StoreCore } from "@waku/core";
 import {
   IDecodedMessage,
@@ -5,7 +6,8 @@ import {
   IStore,
   Libp2p,
   QueryRequestParams,
-  StoreCursor
+  StoreCursor,
+  StoreProtocolOptions
 } from "@waku/interfaces";
 import { messageHash } from "@waku/message-hash";
 import { ensurePubsubTopicIsConfigured, isDefined, Logger } from "@waku/utils";
@@ -23,7 +25,11 @@ const log = new Logger("waku:store:sdk");
 export class Store extends BaseProtocolSDK implements IStore {
   public readonly protocol: StoreCore;
 
-  public constructor(connectionManager: ConnectionManager, libp2p: Libp2p) {
+  public constructor(
+    connectionManager: ConnectionManager,
+    libp2p: Libp2p,
+    private options?: Partial<StoreProtocolOptions>
+  ) {
     super(
       new StoreCore(connectionManager.configuredPubsubTopics, libp2p),
       connectionManager,
@@ -58,12 +64,15 @@ export class Store extends BaseProtocolSDK implements IStore {
       ...options
     };
 
-    const peer = (
-      await this.protocol.getPeers({
-        numPeers: this.numPeersToUse,
-        maxBootstrapPeers: 1
-      })
-    )[0];
+    const peer =
+      (await this.getPeerToUse()) ??
+      (
+        await this.protocol.getPeers({
+          numPeers: this.numPeersToUse,
+          maxBootstrapPeers: 1
+        })
+      )[0];
+
     if (!peer) {
       log.error("No peers available to query");
       throw new Error("No peers available to query");
@@ -228,6 +237,20 @@ export class Store extends BaseProtocolSDK implements IStore {
       decodersAsMap
     };
   }
+
+  private async getPeerToUse(): Promise<Peer | null> {
+    const peer = this.connectedPeers.find(
+      (p) => p.id.toString() === this.options?.peer
+    );
+    if (peer) {
+      return peer;
+    }
+
+    log.warn(
+      `Passed node to use for Store not found: ${this.options?.peer}. Attempting to use random peers.`
+    );
+    return null;
+  }
 }
 
 /**
@@ -237,9 +260,10 @@ export class Store extends BaseProtocolSDK implements IStore {
  * @returns A function that takes a Libp2p instance and returns a StoreSDK instance.
  */
 export function wakuStore(
-  connectionManager: ConnectionManager
+  connectionManager: ConnectionManager,
+  options?: Partial<StoreProtocolOptions>
 ): (libp2p: Libp2p) => IStore {
   return (libp2p: Libp2p) => {
-    return new Store(connectionManager, libp2p);
+    return new Store(connectionManager, libp2p, options);
   };
 }

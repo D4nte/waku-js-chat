@@ -36,7 +36,8 @@ export async function defaultLibp2p(
   options?: Partial<CreateLibp2pOptions>,
   userAgent?: string
 ): Promise<Libp2p> {
-  if (!options?.hideWebSocketInfo && process?.env?.NODE_ENV !== "test") {
+  const isTestEnv = process?.env?.NODE_ENV === "test" ?? false;
+  if (!options?.hideWebSocketInfo && !isTestEnv) {
     /* eslint-disable no-console */
     console.info(
       "%cIgnore WebSocket connection failures",

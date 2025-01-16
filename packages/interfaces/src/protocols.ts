@@ -28,6 +28,10 @@ export type IBaseProtocolSDK = {
   readonly numPeersToUse: number;
 };
 
+export type StoreProtocolOptions = {
+  peer: string;
+};
+
 export type NetworkConfig = StaticSharding | AutoSharding;
 
 //TODO: merge this with ProtocolCreateOptions or establish distinction: https://github.com/waku-org/js-waku/issues/2048
@@ -106,6 +110,10 @@ export type ProtocolCreateOptions = {
    * List of peers to use to bootstrap the node. Ignored if defaultBootstrap is set to true.
    */
   bootstrapPeers?: string[];
+  /**
+   * Options for the Store protocol.
+   */
+  store?: Partial<StoreProtocolOptions>;
 };
 
 export type Callback<T extends IDecodedMessage> = (
