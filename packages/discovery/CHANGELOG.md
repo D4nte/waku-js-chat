@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/waku-org/js-waku/compare/discovery-v0.0.6...discovery-v0.0.7) (2025-01-16)
+
+
+### Bug Fixes
+
+* Remove peer deps ([#2200](https://github.com/waku-org/js-waku/issues/2200)) ([f34fc4b](https://github.com/waku-org/js-waku/commit/f34fc4b2442f1cec326c8ebd45596445232fa65b))
+
 ## [0.0.6](https://github.com/waku-org/js-waku/compare/discovery-v0.0.5...discovery-v0.0.6) (2024-10-16)
 
 

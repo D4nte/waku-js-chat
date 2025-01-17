@@ -47,6 +47,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * @waku/interfaces bumped from 0.0.19 to 0.0.20
     * @waku/peer-exchange bumped from ^0.0.17 to ^0.0.18
 
+## [0.0.30](https://github.com/waku-org/js-waku/compare/sdk-v0.0.29...sdk-v0.0.30) (2025-01-16)
+
+
+### Bug Fixes
+
+* Remove peer deps ([#2200](https://github.com/waku-org/js-waku/issues/2200)) ([f34fc4b](https://github.com/waku-org/js-waku/commit/f34fc4b2442f1cec326c8ebd45596445232fa65b))
+* Remove window reference and improve waitForRemotePeer ([#2194](https://github.com/waku-org/js-waku/issues/2194)) ([88e33a9](https://github.com/waku-org/js-waku/commit/88e33a90fd2a4de93d4ce0cb99dbd77ff454ef34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/discovery bumped from 0.0.6 to 0.0.7
+
 ## [0.0.29](https://github.com/waku-org/js-waku/compare/sdk-v0.0.28...sdk-v0.0.29) (2024-10-16)
 
 
