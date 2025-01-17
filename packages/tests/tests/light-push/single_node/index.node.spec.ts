@@ -23,7 +23,7 @@ import {
 
 // These tests are expected to fail as service nodes now require at least one more connected node: https://github.com/waku-org/nwaku/pull/2951/files
 
-describe.only("Waku Light Push: Single Node: Fails as expected", function () {
+describe("Waku Light Push: Single Node: Fails as expected", function () {
   // Set the timeout for all tests in this suite. Can be overwritten at test level
   this.timeout(15000);
   let waku: LightNode;
