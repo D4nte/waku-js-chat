@@ -402,6 +402,15 @@ export class ServiceNode {
       throw `${this.type} container hasn't started`;
     }
   }
+
+  public async getExternalWebsocketMultiaddr(): Promise<string | undefined> {
+    if (!this.docker?.container) {
+      return undefined;
+    }
+    const containerIp = this.docker.containerIp;
+    const peerId = await this.getPeerId();
+    return `/ip4/${containerIp}/tcp/${this.websocketPort}/ws/p2p/${peerId}`;
+  }
 }
 
 export function defaultArgs(): Args {

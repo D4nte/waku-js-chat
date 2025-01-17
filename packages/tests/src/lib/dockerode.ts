@@ -18,7 +18,7 @@ export default class Dockerode {
   public containerId?: string;
 
   private static network: Docker.Network;
-  private containerIp: string;
+  public readonly containerIp: string;
 
   private constructor(imageName: string, containerIp: string) {
     this.docker = new Docker();
