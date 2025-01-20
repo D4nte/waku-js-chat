@@ -1,4 +1,4 @@
-import { LightNode, ProtocolError, Protocols } from "@waku/interfaces";
+import { LightNode, ProtocolError } from "@waku/interfaces";
 import { createEncoder, createLightNode, utf8ToBytes } from "@waku/sdk";
 import {
   contentTopicToPubsubTopic,
@@ -8,10 +8,8 @@ import { expect } from "chai";
 
 import {
   afterEachCustom,
-  beforeEachCustom,
-  makeLogFileName,
-  MessageCollector,
-  ServiceNode,
+  runMultipleNodes,
+  ServiceNodesFleet,
   tearDownNodes
 } from "../../src/index.js";
 
@@ -22,41 +20,33 @@ describe("Autosharding: Running Nodes", function () {
   this.timeout(50000);
   const clusterId = 10;
   let waku: LightNode;
-  let nwaku: ServiceNode;
-  let messageCollector: MessageCollector;
-
-  beforeEachCustom(this, async () => {
-    nwaku = new ServiceNode(makeLogFileName(this.ctx));
-    messageCollector = new MessageCollector(nwaku);
-  });
+  let serviceNodes: ServiceNodesFleet;
 
   afterEachCustom(this, async () => {
-    await tearDownNodes(nwaku, waku);
+    await tearDownNodes(serviceNodes.nodes, waku);
   });
 
   describe("Different clusters and topics", function () {
-    // js-waku allows autosharding for cluster IDs different than 1
     it("Cluster ID 0 - Default/Global Cluster", async function () {
       const clusterId = 0;
       const pubsubTopics = [contentTopicToPubsubTopic(ContentTopic, clusterId)];
-      await nwaku.start({
-        store: true,
-        lightpush: true,
-        relay: true,
-        clusterId: clusterId,
-        pubsubTopic: pubsubTopics
-      });
 
-      await nwaku.ensureSubscriptions(pubsubTopics);
-
-      waku = await createLightNode({
-        networkConfig: {
-          clusterId: clusterId,
+      [serviceNodes, waku] = await runMultipleNodes(
+        this.ctx,
+        {
+          clusterId,
           contentTopics: [ContentTopic]
-        }
-      });
-      await waku.dial(await nwaku.getMultiaddrWithId());
-      await waku.waitForPeers([Protocols.LightPush]);
+        },
+        {
+          store: true,
+          lightpush: true,
+          relay: true,
+          pubsubTopic: pubsubTopics
+        },
+        false,
+        2,
+        true
+      );
 
       const encoder = createEncoder({
         contentTopic: ContentTopic,
@@ -70,9 +60,10 @@ describe("Autosharding: Running Nodes", function () {
         payload: utf8ToBytes("Hello World")
       });
 
-      expect(request.successes.length).to.eq(1);
+      expect(request.successes.length).to.eq(2); // Expect 2 successes for 2 nodes
+      console.log("good");
       expect(
-        await messageCollector.waitForMessagesAutosharding(1, {
+        await serviceNodes.messageCollector.waitForMessagesAutosharding(1, {
           contentTopic: ContentTopic
         })
       ).to.eq(true);
@@ -81,24 +72,23 @@ describe("Autosharding: Running Nodes", function () {
     it("Non TWN Cluster", async function () {
       const clusterId = 5;
       const pubsubTopics = [contentTopicToPubsubTopic(ContentTopic, clusterId)];
-      await nwaku.start({
-        store: true,
-        lightpush: true,
-        relay: true,
-        clusterId: clusterId,
-        pubsubTopic: pubsubTopics
-      });
 
-      await nwaku.ensureSubscriptions(pubsubTopics);
-
-      waku = await createLightNode({
-        networkConfig: {
-          clusterId: clusterId,
+      [serviceNodes, waku] = await runMultipleNodes(
+        this.ctx,
+        {
+          clusterId,
           contentTopics: [ContentTopic]
-        }
-      });
-      await waku.dial(await nwaku.getMultiaddrWithId());
-      await waku.waitForPeers([Protocols.LightPush]);
+        },
+        {
+          store: true,
+          lightpush: true,
+          relay: true,
+          pubsubTopic: pubsubTopics
+        },
+        false,
+        2,
+        true
+      );
 
       const encoder = createEncoder({
         contentTopic: ContentTopic,
@@ -112,9 +102,9 @@ describe("Autosharding: Running Nodes", function () {
         payload: utf8ToBytes("Hello World")
       });
 
-      expect(request.successes.length).to.eq(1);
+      expect(request.successes.length).to.eq(2); // Expect 2 successes for 2 nodes
       expect(
-        await messageCollector.waitForMessagesAutosharding(1, {
+        await serviceNodes.messageCollector.waitForMessagesAutosharding(1, {
           contentTopic: ContentTopic
         })
       ).to.eq(true);
@@ -138,24 +128,23 @@ describe("Autosharding: Running Nodes", function () {
           contentTopicToPubsubTopic(ContentTopic, clusterId)
         ];
 
-        await nwaku.start({
-          store: true,
-          lightpush: true,
-          relay: true,
-          clusterId: clusterId,
-          pubsubTopic: pubsubTopics,
-          contentTopic: [ContentTopic]
-        });
-
-        waku = await createLightNode({
-          networkConfig: {
-            clusterId: clusterId,
+        [serviceNodes, waku] = await runMultipleNodes(
+          this.ctx,
+          {
+            clusterId,
             contentTopics: [ContentTopic]
-          }
-        });
-
-        await waku.dial(await nwaku.getMultiaddrWithId());
-        await waku.waitForPeers([Protocols.LightPush]);
+          },
+          {
+            store: true,
+            lightpush: true,
+            relay: true,
+            pubsubTopic: pubsubTopics,
+            contentTopic: [ContentTopic]
+          },
+          false,
+          2,
+          true
+        );
 
         const encoder = createEncoder({
           contentTopic: ContentTopic,
@@ -169,9 +158,9 @@ describe("Autosharding: Running Nodes", function () {
           payload: utf8ToBytes("Hello World")
         });
 
-        expect(request.successes.length).to.eq(1);
+        expect(request.successes.length).to.eq(2); // Expect 2 successes for 2 nodes
         expect(
-          await messageCollector.waitForMessagesAutosharding(1, {
+          await serviceNodes.messageCollector.waitForMessagesAutosharding(1, {
             contentTopic: ContentTopic
           })
         ).to.eq(true);
@@ -201,24 +190,23 @@ describe("Autosharding: Running Nodes", function () {
         contentTopicToPubsubTopic(ContentTopic2, clusterId)
       ];
 
-      await nwaku.start({
-        store: true,
-        lightpush: true,
-        relay: true,
-        clusterId: clusterId,
-        pubsubTopic: pubsubTopics,
-        contentTopic: [ContentTopic, ContentTopic2]
-      });
-
-      waku = await createLightNode({
-        networkConfig: {
-          clusterId: clusterId,
-          // For autosharding, we configure multiple pubsub topics by using two content topics that hash to different shards
+      [serviceNodes, waku] = await runMultipleNodes(
+        this.ctx,
+        {
+          clusterId,
           contentTopics: [ContentTopic, ContentTopic2]
-        }
-      });
-      await waku.dial(await nwaku.getMultiaddrWithId());
-      await waku.waitForPeers([Protocols.LightPush]);
+        },
+        {
+          store: true,
+          lightpush: true,
+          relay: true,
+          pubsubTopic: pubsubTopics,
+          contentTopic: [ContentTopic, ContentTopic2]
+        },
+        false,
+        2,
+        true
+      );
 
       const encoder1 = createEncoder({
         contentTopic: ContentTopic,
@@ -239,9 +227,9 @@ describe("Autosharding: Running Nodes", function () {
       const request1 = await waku.lightPush.send(encoder1, {
         payload: utf8ToBytes("Hello World")
       });
-      expect(request1.successes.length).to.eq(1);
+      expect(request1.successes.length).to.eq(2); // Expect 2 successes for 2 nodes
       expect(
-        await messageCollector.waitForMessagesAutosharding(1, {
+        await serviceNodes.messageCollector.waitForMessagesAutosharding(1, {
           contentTopic: ContentTopic
         })
       ).to.eq(true);
@@ -249,9 +237,9 @@ describe("Autosharding: Running Nodes", function () {
       const request2 = await waku.lightPush.send(encoder2, {
         payload: utf8ToBytes("Hello World")
       });
-      expect(request2.successes.length).to.eq(1);
+      expect(request2.successes.length).to.eq(2); // Expect 2 successes for 2 nodes
       expect(
-        await messageCollector.waitForMessagesAutosharding(1, {
+        await serviceNodes.messageCollector.waitForMessagesAutosharding(1, {
           contentTopic: ContentTopic
         })
       ).to.eq(true);
@@ -259,21 +247,24 @@ describe("Autosharding: Running Nodes", function () {
 
     it("using a protocol with unconfigured pubsub topic should fail", async function () {
       const pubsubTopics = [contentTopicToPubsubTopic(ContentTopic, clusterId)];
-      await nwaku.start({
-        store: true,
-        lightpush: true,
-        relay: true,
-        clusterId: clusterId,
-        pubsubTopic: pubsubTopics,
-        contentTopic: [ContentTopic]
-      });
 
-      waku = await createLightNode({
-        networkConfig: {
-          clusterId: clusterId,
+      [serviceNodes, waku] = await runMultipleNodes(
+        this.ctx,
+        {
+          clusterId,
           contentTopics: [ContentTopic]
-        }
-      });
+        },
+        {
+          store: true,
+          lightpush: true,
+          relay: true,
+          pubsubTopic: pubsubTopics,
+          contentTopic: [ContentTopic]
+        },
+        false,
+        2,
+        true
+      );
 
       // use a content topic that is not configured
       const encoder = createEncoder({
@@ -288,17 +279,17 @@ describe("Autosharding: Running Nodes", function () {
         payload: utf8ToBytes("Hello World")
       });
 
-      if (successes.length > 0 || failures?.length === 0) {
+      if (successes.length > 0 || !failures?.length) {
         throw new Error("The request should've thrown an error");
       }
 
-      const errors = failures?.map((failure) => failure.error);
+      const errors = failures.map((failure) => failure.error);
       expect(errors).to.include(ProtocolError.TOPIC_NOT_CONFIGURED);
     });
 
     it("start node with empty content topic", async function () {
       try {
-        waku = await createLightNode({
+        await createLightNode({
           networkConfig: {
             clusterId: clusterId,
             contentTopics: []
