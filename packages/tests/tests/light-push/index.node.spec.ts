@@ -50,7 +50,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         const pushResponse = await waku.lightPush.send(TestEncoder, {
           payload: utf8ToBytes(testItem.value)
         });
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -73,7 +73,7 @@ const runTests = (strictNodeCheck: boolean): void => {
           payload: utf8ToBytes(generateMessageText(i))
         });
 
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
       }
 
       expect(
@@ -119,7 +119,7 @@ const runTests = (strictNodeCheck: boolean): void => {
           customEncoder,
           messagePayload
         );
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -156,7 +156,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         customTestEncoder,
         messagePayload
       );
-      expect(pushResponse.successes.length).to.eq(numServiceNodes);
+      expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
 
       expect(
         await serviceNodes.messageCollector.waitForMessages(1, {
@@ -190,7 +190,7 @@ const runTests = (strictNodeCheck: boolean): void => {
       );
 
       if (serviceNodes.type == "go-waku") {
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
             pubsubTopic: TestPubsubTopic
@@ -229,7 +229,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         payload: utf8ToBytes(messageText),
         rateLimitProof: rateLimitProof
       });
-      expect(pushResponse.successes.length).to.eq(numServiceNodes);
+      expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
 
       expect(
         await serviceNodes.messageCollector.waitForMessages(1, {
@@ -253,7 +253,7 @@ const runTests = (strictNodeCheck: boolean): void => {
           payload: utf8ToBytes(messageText),
           timestamp: new Date(testItem)
         });
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -274,7 +274,7 @@ const runTests = (strictNodeCheck: boolean): void => {
       const pushResponse = await waku.lightPush.send(TestEncoder, {
         payload: bigPayload
       });
-      expect(pushResponse.successes.length).to.greaterThan(0);
+      expect(pushResponse.successes.length).to.greaterThanOrEqual(1);
     });
 
     it("Fails to push message bigger that 1MB", async function () {

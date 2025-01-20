@@ -174,7 +174,7 @@ describe("Static Sharding: Running Nodes", function () {
       shard: 3
     };
 
-    it.only("configure the node with multiple pubsub topics", async function () {
+    it("configure the node with multiple pubsub topics", async function () {
       [serviceNodes, waku] = await runMultipleNodes(
         this.ctx,
         shardInfoBothShards,
