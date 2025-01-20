@@ -36,7 +36,9 @@ export async function runMultipleNodes(
     withoutFilter
   );
 
-  await verifyServiceNodesConnected(serviceNodes.nodes);
+  if (numServiceNodes > 1) {
+    await verifyServiceNodesConnected(serviceNodes.nodes);
+  }
 
   const wakuOptions: ProtocolCreateOptions = {
     staticNoiseKey: NOISE_KEY_1,

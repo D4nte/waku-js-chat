@@ -430,3 +430,20 @@ interface RpcInfoResponse {
   listenAddresses: string[];
   enrUri?: string;
 }
+
+export async function verifyServiceNodesConnected(
+  nodes: ServiceNode[]
+): Promise<void> {
+  for (const node of nodes) {
+    const peers = await node.peers();
+    log.info(`Service node ${node.containerName} peers:`, peers.length);
+    log.info(`Service node ${node.containerName} peers:`, peers);
+
+    if (nodes.length > 1 && peers.length === 0) {
+      log.error(`Service node ${node.containerName} has no peers connected`);
+      throw new Error(
+        `Service node ${node.containerName} has no peers connected`
+      );
+    }
+  }
+}
