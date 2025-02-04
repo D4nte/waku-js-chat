@@ -1,8 +1,34 @@
-import { createRequire } from "module";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { extractExports } from "@waku/build-utils";
+import copy from "rollup-plugin-copy";
 
-import { createConfig } from "@waku/build-utils";
+import * as packageJson from "./package.json" assert { type: "json" };
 
-const require = createRequire(import.meta.url);
-const pkg = require("./package.json");
+const input = extractExports(packageJson);
 
-export default createConfig(pkg);
+export default {
+  input,
+  output: {
+    dir: "bundle",
+    format: "esm"
+  },
+  plugins: [
+    commonjs(),
+    json(),
+    nodeResolve({
+      browser: true,
+      preferBuiltins: false
+    }),
+    copy({
+      targets: [
+        {
+          src: ["src/resources/*"],
+          dest: "dist/resources"
+        }
+      ],
+      copyOnce: true
+    })
+  ]
+};

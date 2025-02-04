@@ -35,7 +35,7 @@
     "fix:lint": "eslint src *.js --fix",
     "check": "run-s check:*",
     "check:tsc": "tsc -p tsconfig.dev.json",
-    "check:lint": "eslint src *.js",
+    "check:lint": "eslint \"src/!(resources)/**/*.{ts,js}\" *.js",
     "check:spelling": "cspell \"{README.md,src/**/*.ts}\"",
     "test": "NODE_ENV=test run-s test:*",
     "test:node": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json mocha",
@@ -48,7 +48,22 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@waku/build-utils": "^1.0.0"
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/chai": "^5.0.1",
+    "@types/chai-spies": "^1.0.6",
+    "@types/deep-equal-in-any-order": "^1.0.4",
+    "@types/lodash": "^4.17.15",
+    "@waku/build-utils": "^1.0.0",
+    "@waku/message-encryption": "^0.0.31",
+    "chai": "^5.1.2",
+    "chai-as-promised": "^8.0.1",
+    "chai-spies": "^1.1.0",
+    "chai-subset": "^1.6.0",
+    "deep-equal-in-any-order": "^2.0.6",
+    "fast-check": "^3.23.2",
+    "rollup-plugin-copy": "^3.5.0"
   },
   "files": [
     "dist",
@@ -59,5 +74,15 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
-  ]
+  ],
+  "dependencies": {
+    "@chainsafe/bls-keystore": "3.0.0",
+    "@waku/core": "^0.0.33",
+    "@waku/utils": "^0.0.21",
+    "@waku/zerokit-rln-wasm": "^0.0.13",
+    "ethereum-cryptography": "^3.1.0",
+    "ethers": "^5.7.2",
+    "lodash": "^4.17.21",
+    "uuid": "^11.0.5"
+  }
 }
