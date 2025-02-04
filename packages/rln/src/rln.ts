@@ -4,6 +4,7 @@ import type {
   IDecodedMessage,
   EncoderOptions as WakuEncoderOptions
 } from "@waku/interfaces";
+import { Logger } from "@waku/utils";
 import init from "@waku/zerokit-rln-wasm";
 import * as zerokitRLN from "@waku/zerokit-rln-wasm";
 import { ethers } from "ethers";
@@ -24,20 +25,26 @@ import type {
 import { KeystoreEntity, Password } from "./keystore/types.js";
 import verificationKey from "./resources/verification_key";
 import * as wc from "./resources/witness_calculator";
-import { WitnessCalculator } from "./resources/witness_calculator";
 import { extractMetaMaskSigner } from "./utils/index.js";
 import { Zerokit } from "./zerokit.js";
 
-async function loadWitnessCalculator(): Promise<WitnessCalculator> {
-  const url = new URL("./resources/rln.wasm", import.meta.url);
-  const response = await fetch(url);
-  return await wc.builder(new Uint8Array(await response.arrayBuffer()), false);
+const log = new Logger("waku:rln");
+
+async function loadWitnessCalculator(): Promise<wc.WitnessCalculator> {
+  const res = await fetch("/base/rln.wasm");
+  if (!res.ok) {
+    throw new Error(`Failed to fetch rln.wasm: ${res.statusText}`);
+  }
+  const witnessBuffer = await res.arrayBuffer();
+  return wc.builder(new Uint8Array(witnessBuffer), false);
 }
 
 async function loadZkey(): Promise<Uint8Array> {
-  const url = new URL("./resources/rln_final.zkey", import.meta.url);
-  const response = await fetch(url);
-  return new Uint8Array(await response.arrayBuffer());
+  const res = await fetch("/base/rln_final.zkey");
+  if (!res.ok) {
+    throw new Error(`Failed to fetch rln_final.zkey: ${res.statusText}`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
 }
 
 /**
@@ -45,21 +52,26 @@ async function loadZkey(): Promise<Uint8Array> {
  * @returns RLNInstance
  */
 export async function create(): Promise<RLNInstance> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (init as any)?.();
-  zerokitRLN.init_panic_hook();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (init as any)?.();
+    zerokitRLN.init_panic_hook();
 
-  const witnessCalculator = await loadWitnessCalculator();
-  const zkey = await loadZkey();
+    const witnessCalculator = await loadWitnessCalculator();
+    const zkey = await loadZkey();
 
-  const stringEncoder = new TextEncoder();
-  const vkey = stringEncoder.encode(JSON.stringify(verificationKey));
+    const stringEncoder = new TextEncoder();
+    const vkey = stringEncoder.encode(JSON.stringify(verificationKey));
 
-  const DEPTH = 20;
-  const zkRLN = zerokitRLN.newRLN(DEPTH, zkey, vkey);
-  const zerokit = new Zerokit(zkRLN, witnessCalculator);
+    const DEPTH = 20;
+    const zkRLN = zerokitRLN.newRLN(DEPTH, zkey, vkey);
+    const zerokit = new Zerokit(zkRLN, witnessCalculator);
 
-  return new RLNInstance(zerokit);
+    return new RLNInstance(zerokit);
+  } catch (error) {
+    log.error("Failed to initialize RLN:", error);
+    throw error;
+  }
 }
 
 type StartRLNOptions = {

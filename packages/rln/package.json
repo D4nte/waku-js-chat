@@ -38,7 +38,7 @@
     "check:lint": "eslint \"src/!(resources)/**/*.{ts,js}\" *.js",
     "check:spelling": "cspell \"{README.md,src/**/*.ts}\"",
     "test": "NODE_ENV=test run-s test:*",
-    "test:node": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json mocha",
+    "test:browser": "karma start karma.conf.cjs",
     "watch:build": "tsc -p tsconfig.json -w",
     "watch:test": "mocha --watch",
     "prepublish": "npm run build",
