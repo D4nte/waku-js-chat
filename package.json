@@ -17,7 +17,8 @@
     "packages/browser-tests",
     "packages/build-utils",
     "packages/react-native-polyfills",
-    "packages/sds"
+    "packages/sds",
+    "packages/rln"
   ],
   "scripts": {
     "prepare": "husky",
