@@ -235,46 +235,59 @@ class MultipleNodesMessageCollector {
       exact?: boolean;
     }
   ): Promise<boolean> {
-    const startTime = Date.now();
     const pubsubTopic = options?.pubsubTopic || DefaultTestPubsubTopic;
     const timeoutDuration = options?.timeoutDuration || 400;
     const maxTimeout = Math.min(timeoutDuration * numMessages, 30000);
     const exact = options?.exact || false;
 
     try {
-      while (Date.now() - startTime < maxTimeout) {
-        // Check if we already have enough messages
-        if (this.messageList.length >= numMessages) {
-          if (exact && this.messageList.length !== numMessages) {
-            log.warn(
-              `Was expecting exactly ${numMessages} messages. Received: ${this.messageList.length}`
-            );
-            return false;
+      const timeoutPromise = new Promise<boolean>((resolve) => {
+        setTimeout(() => {
+          log.warn(`Timeout waiting for messages after ${maxTimeout}ms`);
+          resolve(false);
+        }, maxTimeout);
+      });
+
+      const checkMessagesPromise = new Promise<boolean>((resolve) => {
+        const checkMessages = (): void => {
+          // Check local messages
+          if (this.messageList.length >= numMessages) {
+            if (exact && this.messageList.length !== numMessages) {
+              log.warn(
+                `Was expecting exactly ${numMessages} messages. Received: ${this.messageList.length}`
+              );
+              resolve(false);
+              return;
+            }
+            resolve(true);
+            return;
           }
-          return true;
-        }
 
-        // If we have relay nodes, check their messages
-        if (this.relayNodes) {
-          const nodeMessages = await Promise.all(
-            this.relayNodes.map(async (node) => node.messages(pubsubTopic))
-          );
+          if (this.relayNodes) {
+            void Promise.all(
+              this.relayNodes.map((node) => node.messages(pubsubTopic))
+            ).then((nodeMessages) => {
+              const hasEnoughMessages = this.strictChecking
+                ? nodeMessages.every((msgs) => msgs.length >= numMessages)
+                : nodeMessages.some((msgs) => msgs.length >= numMessages);
 
-          // Check if we have enough messages according to strictness
-          const hasEnoughMessages = this.strictChecking
-            ? nodeMessages.every((msgs) => msgs.length >= numMessages)
-            : nodeMessages.some((msgs) => msgs.length >= numMessages);
-
-          if (hasEnoughMessages) {
-            return true;
+              if (hasEnoughMessages) {
+                resolve(true);
+                return;
+              }
+              setTimeout(checkMessages, 100);
+            });
+          } else {
+            setTimeout(checkMessages, 100);
           }
-        }
+        };
 
-        await delay(10);
-      }
+        // Start checking
+        checkMessages();
+      });
 
-      log.warn(`Timeout waiting for messages after ${maxTimeout}ms`);
-      return false;
+      // Race between timeout and message checking
+      return Promise.race([timeoutPromise, checkMessagesPromise]);
     } catch (error) {
       log.error("Error in waitForMessages:", error);
       return false;
