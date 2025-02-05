@@ -1,6 +1,6 @@
 {
   "name": "@waku/interfaces",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Definition of Waku interfaces",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
@@ -64,6 +64,6 @@
     "README.md"
   ],
   "dependencies": {
-    "@waku/proto": "^0.0.8"
+    "@waku/proto": "^0.0.9"
   }
 }

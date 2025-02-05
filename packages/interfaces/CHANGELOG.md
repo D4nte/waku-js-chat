@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The file is maintained by [Release Please](https://github.com/googleapis/release-please) based on [Conventional Commits](https://www.conventionalcommits.org) specification,
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.29](https://github.com/waku-org/js-waku/compare/interfaces-v0.0.28...interfaces-v0.0.29) (2025-02-05)
+
+
+### Features
+
+* Improve peer manager and re-integrate to light push  ([#2191](https://github.com/waku-org/js-waku/issues/2191)) ([62f93dc](https://github.com/waku-org/js-waku/commit/62f93dc8428132161dba8881c6adc162040ae758))
+* **store:** Allow specifying node to use ([#2192](https://github.com/waku-org/js-waku/issues/2192)) ([4153396](https://github.com/waku-org/js-waku/commit/415339601476925874904b19be43f6e055a45004))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/proto bumped from ^0.0.8 to ^0.0.9
+
 ## [0.0.28](https://github.com/waku-org/js-waku/compare/interfaces-v0.0.27...interfaces-v0.0.28) (2024-10-16)
 
 

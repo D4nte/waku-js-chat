@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/waku-org/js-waku/compare/proto-v0.0.8...proto-v0.0.9) (2025-02-05)
+
+
+### Features
+
+* **sds:** Create package for sds and add protobuf def ([468512f](https://github.com/waku-org/js-waku/commit/468512fa85a5e6c1618803338e0e9d17e1a9c4b7))
+
 ## [0.0.8](https://github.com/waku-org/js-waku/compare/proto-v0.0.7...proto-v0.0.8) (2024-08-29)
 
 
