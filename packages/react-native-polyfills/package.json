@@ -42,10 +42,10 @@
     "text-encoding-polyfill": "^0.6.7"
   },
   "devDependencies": {
-    "expo": "~51.0.14"
+    "expo": "~52.0.30"
   },
   "peerDependencies": {
-    "expo": "~51.0.14",
+    "expo": "~52.0.30",
     "react-native": "0.73.6"
   },
   "files": [
