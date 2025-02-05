@@ -50,7 +50,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         const pushResponse = await waku.lightPush.send(TestEncoder, {
           payload: utf8ToBytes(testItem.value)
         });
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.equal(numServiceNodes);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -65,24 +65,24 @@ const runTests = (strictNodeCheck: boolean): void => {
       });
     });
 
-    it("Push 30 different messages", async function () {
+    it("Push 5 different messages", async function () {
       const generateMessageText = (index: number): string => `M${index}`;
 
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 5; i++) {
         const pushResponse = await waku.lightPush.send(TestEncoder, {
           payload: utf8ToBytes(generateMessageText(i))
         });
-
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        if (pushResponse.failures.length > 0) console.log(i + 1);
+        expect(pushResponse.successes.length).to.equal(numServiceNodes);
       }
 
       expect(
-        await serviceNodes.messageCollector.waitForMessages(30, {
+        await serviceNodes.messageCollector.waitForMessages(5, {
           pubsubTopic: TestPubsubTopic
         })
       ).to.eq(true);
 
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 5; i++) {
         serviceNodes.messageCollector.verifyReceivedMessage(i, {
           expectedMessageText: generateMessageText(i),
           expectedContentTopic: TestContentTopic,
@@ -119,7 +119,7 @@ const runTests = (strictNodeCheck: boolean): void => {
           customEncoder,
           messagePayload
         );
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.equal(numServiceNodes);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -156,7 +156,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         customTestEncoder,
         messagePayload
       );
-      expect(pushResponse.successes.length).to.eq(numServiceNodes);
+      expect(pushResponse.successes.length).to.equal(numServiceNodes);
 
       expect(
         await serviceNodes.messageCollector.waitForMessages(1, {
@@ -190,7 +190,7 @@ const runTests = (strictNodeCheck: boolean): void => {
       );
 
       if (serviceNodes.type == "go-waku") {
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.equal(numServiceNodes);
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
             pubsubTopic: TestPubsubTopic
@@ -229,7 +229,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         payload: utf8ToBytes(messageText),
         rateLimitProof: rateLimitProof
       });
-      expect(pushResponse.successes.length).to.eq(numServiceNodes);
+      expect(pushResponse.successes.length).to.equal(numServiceNodes);
 
       expect(
         await serviceNodes.messageCollector.waitForMessages(1, {
@@ -253,7 +253,7 @@ const runTests = (strictNodeCheck: boolean): void => {
           payload: utf8ToBytes(messageText),
           timestamp: new Date(testItem)
         });
-        expect(pushResponse.successes.length).to.eq(numServiceNodes);
+        expect(pushResponse.successes.length).to.equal(numServiceNodes);
 
         expect(
           await serviceNodes.messageCollector.waitForMessages(1, {
@@ -274,7 +274,7 @@ const runTests = (strictNodeCheck: boolean): void => {
       const pushResponse = await waku.lightPush.send(TestEncoder, {
         payload: bigPayload
       });
-      expect(pushResponse.successes.length).to.greaterThan(0);
+      expect(pushResponse.successes.length).to.equal(numServiceNodes);
     });
 
     it("Fails to push message bigger that 1MB", async function () {

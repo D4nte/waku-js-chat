@@ -304,12 +304,9 @@ describe("Waku Store, general", function () {
       for await (const msg of query) {
         if (msg) {
           messages.push(msg as DecodedMessage);
-          console.log(bytesToUtf8(msg.payload!));
         }
       }
     }
-
-    console.log(messages.length);
 
     // Messages are ordered from oldest to latest within a page (1 page query)
     expect(bytesToUtf8(messages[0].payload!)).to.eq(asymText);

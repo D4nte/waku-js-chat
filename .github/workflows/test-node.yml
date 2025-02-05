@@ -33,6 +33,7 @@ env:
 jobs:
   node:
     runs-on: ubuntu-latest
+    timeout-minutes: 60  # Add a 1-hour timeout to fail faster
     env:
       WAKUNODE_IMAGE: ${{ inputs.nim_wakunode_image }}
       ALLURE_REPORTS: ${{ inputs.allure_reports }}

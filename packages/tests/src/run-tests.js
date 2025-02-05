@@ -3,7 +3,7 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-const WAKUNODE_IMAGE = process.env.WAKUNODE_IMAGE || "wakuorg/nwaku:v0.31.0";
+const WAKUNODE_IMAGE = process.env.WAKUNODE_IMAGE || "wakuorg/nwaku:v0.34.0";
 
 async function main() {
   try {
@@ -40,6 +40,15 @@ async function main() {
 
   mocha.on("exit", (code) => {
     console.log(`Mocha tests exited with code ${code}`);
+    try {
+      execAsync(
+        `docker ps -q -f "ancestor=${WAKUNODE_IMAGE}" | xargs -r docker stop`
+      ).catch((error) => {
+        console.error("Error cleaning up containers:", error);
+      });
+    } catch (error) {
+      console.error("Error cleaning up containers:", error);
+    }
     process.exit(code || 0);
   });
 }

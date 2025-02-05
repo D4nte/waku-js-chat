@@ -13,6 +13,7 @@ import pRetry from "p-retry";
 
 import { NOISE_KEY_1 } from "../constants.js";
 import { ServiceNodesFleet } from "../lib/index.js";
+import { verifyServiceNodesConnected } from "../lib/service_node.js";
 import { Args } from "../types.js";
 
 import { waitForConnections } from "./waitForConnections.js";
@@ -34,6 +35,10 @@ export async function runMultipleNodes(
     customArgs,
     withoutFilter
   );
+
+  if (numServiceNodes > 1) {
+    await verifyServiceNodesConnected(serviceNodes.nodes);
+  }
 
   const wakuOptions: CreateNodeOptions = {
     staticNoiseKey: NOISE_KEY_1,
@@ -57,16 +62,17 @@ export async function runMultipleNodes(
       derivePubsubTopicsFromNetworkConfig(networkConfig)
     );
 
-    const wakuConnections = waku.libp2p.getConnections();
-
-    if (wakuConnections.length < 1) {
-      throw new Error(`Expected at least 1 connection for js-waku.`);
-    }
-
     await node.waitForLog(waku.libp2p.peerId.toString(), 100);
   }
 
   await waitForConnections(numServiceNodes, waku);
+
+  const wakuConnections = waku.libp2p.getConnections();
+  if (wakuConnections.length < numServiceNodes) {
+    throw new Error(
+      `Expected at least ${numServiceNodes} connections for js-waku.`
+    );
+  }
 
   return [serviceNodes, waku];
 }

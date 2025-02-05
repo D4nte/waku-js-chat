@@ -23,11 +23,11 @@ import {
   afterEachCustom,
   beforeEachCustom,
   delay,
-  makeLogFileName,
   NOISE_KEY_1,
   NOISE_KEY_2,
-  ServiceNode,
-  tearDownNodes
+  runMultipleNodes,
+  ServiceNodesFleet,
+  teardownNodesWithRedundancy
 } from "../src/index.js";
 
 const log = new Logger("test:ephemeral");
@@ -76,41 +76,39 @@ const SymDecoder = createSymDecoder(SymContentTopic, symKey, PubsubTopic);
 
 describe("Waku Message Ephemeral field", function () {
   let waku: LightNode;
-  let nwaku: ServiceNode;
+  let serviceNodes: ServiceNodesFleet;
 
   afterEachCustom(this, async () => {
-    await tearDownNodes(nwaku, waku);
+    await teardownNodesWithRedundancy(serviceNodes, waku);
   });
 
   beforeEachCustom(this, async () => {
-    nwaku = new ServiceNode(makeLogFileName(this.ctx));
-    await nwaku.start({
-      filter: true,
-      lightpush: true,
-      store: true,
-      relay: true,
-      pubsubTopic: [PubsubTopic],
-      contentTopic: [TestContentTopic, AsymContentTopic, SymContentTopic],
-      clusterId: ClusterId
-    });
-    await nwaku.ensureSubscriptionsAutosharding([
-      TestContentTopic,
-      AsymContentTopic,
-      SymContentTopic
-    ]);
+    [serviceNodes, waku] = await runMultipleNodes(
+      this.ctx,
+      {
+        clusterId: ClusterId,
+        contentTopics: [TestContentTopic, AsymContentTopic, SymContentTopic]
+      },
+      {
+        filter: true,
+        lightpush: true,
+        store: true,
+        relay: true,
+        pubsubTopic: [PubsubTopic]
+      },
+      true,
+      2
+    );
 
-    waku = await createLightNode({
-      staticNoiseKey: NOISE_KEY_1,
-      libp2p: { addresses: { listen: ["/ip4/0.0.0.0/tcp/0/ws"] } },
-      networkConfig: {
-        contentTopics: [TestContentTopic, AsymContentTopic, SymContentTopic],
-        clusterId: ClusterId
-      }
-    });
-    await waku.start();
-    await waku.dial(await nwaku.getMultiaddrWithId());
-
-    await waku.waitForPeers([Protocols.Filter, Protocols.LightPush]);
+    await Promise.all(
+      serviceNodes.nodes.map(async (node) => {
+        await node.ensureSubscriptionsAutosharding([
+          TestContentTopic,
+          AsymContentTopic,
+          SymContentTopic
+        ]);
+      })
+    );
   });
 
   it("Ephemeral messages are not stored", async function () {
@@ -130,7 +128,7 @@ describe("Waku Message Ephemeral field", function () {
       payload: utf8ToBytes(clearText)
     };
 
-    const [waku1, waku2, nimWakuMultiaddr] = await Promise.all([
+    const [waku1, waku2] = await Promise.all([
       createLightNode({
         staticNoiseKey: NOISE_KEY_1,
         networkConfig: {
@@ -144,16 +142,18 @@ describe("Waku Message Ephemeral field", function () {
           contentTopics: [TestContentTopic, AsymContentTopic, SymContentTopic],
           clusterId: ClusterId
         }
-      }).then((waku) => waku.start().then(() => waku)),
-      nwaku.getMultiaddrWithId()
+      }).then((waku) => waku.start().then(() => waku))
     ]);
 
     log.info("Waku nodes created");
 
-    await Promise.all([
-      waku1.dial(nimWakuMultiaddr),
-      waku2.dial(nimWakuMultiaddr)
-    ]);
+    await Promise.all(
+      serviceNodes.nodes.map(async (node) => {
+        const multiaddr = await node.getMultiaddrWithId();
+        await waku1.dial(multiaddr);
+        await waku2.dial(multiaddr);
+      })
+    );
 
     log.info("Waku nodes connected to nwaku");
 
@@ -186,7 +186,7 @@ describe("Waku Message Ephemeral field", function () {
 
     expect(messages?.length).eq(0);
 
-    await tearDownNodes([], [waku1, waku2]);
+    await teardownNodesWithRedundancy(serviceNodes, [waku1, waku2]);
   });
 
   it("Ephemeral field is preserved - encoder v0", async function () {

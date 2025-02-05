@@ -56,7 +56,7 @@ describe("DNS Node Discovery [live data]", function () {
   });
 
   it(`should use DNS peer discovery with light client`, async function () {
-    this.timeout(100000);
+    this.timeout(100_000);
     const maxQuantity = 3;
 
     const nodeRequirements = {
