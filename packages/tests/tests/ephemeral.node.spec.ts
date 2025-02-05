@@ -186,16 +186,7 @@ describe("Waku Message Ephemeral field", function () {
 
     expect(messages?.length).eq(0);
 
-    const additionalServiceNodes = await ServiceNodesFleet.createAndRun(
-      this.ctx,
-      0,
-      false,
-      {
-        clusterId: ClusterId,
-        contentTopics: [TestContentTopic, AsymContentTopic, SymContentTopic]
-      }
-    );
-    await teardownNodesWithRedundancy(additionalServiceNodes, [waku1, waku2]);
+    await teardownNodesWithRedundancy(serviceNodes, [waku1, waku2]);
   });
 
   it("Ephemeral field is preserved - encoder v0", async function () {
