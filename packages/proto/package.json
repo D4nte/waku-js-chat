@@ -1,6 +1,6 @@
 {
   "name": "@waku/proto",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Protobuf definitions for Waku",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
